@@ -1,0 +1,49 @@
+.App {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+}
+
+.file-upload {
+    margin: 20px 0;
+    padding: 20px;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+}
+
+.file-upload input[type="file"] {
+    margin-bottom: 10px;
+}
+
+.file-upload button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.file-upload button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.error {
+    color: red;
+    margin-top: 10px;
+}
+
+.subtitles {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    text-align: left;
+}
+
+.subtitles pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}

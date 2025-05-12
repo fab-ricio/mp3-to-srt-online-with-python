@@ -1,0 +1,5 @@
+Flask
+flask-cors
+pydub
+speechrecognition
+python-dotenv
