@@ -3,6 +3,7 @@ const cors = require("cors");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const { spawn } = require("child_process");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -50,30 +51,50 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 
     const filePath = path.join(__dirname, req.file.path);
 
-    // Ici, vous pouvez ajouter la logique pour appeler le script Python
-    // Pour l'instant, nous renvoyons juste un succès
-    res.json({
-      success: true,
-      message: "Fichier reçu avec succès",
-      filePath: filePath,
+    // Appeler le script Python
+    const pythonProcess = spawn("python", ["app.py", filePath]);
+
+    let srtContent = "";
+    let errorOutput = "";
+
+    pythonProcess.stdout.on("data", (data) => {
+      srtContent += data.toString();
+    });
+
+    pythonProcess.stderr.on("data", (data) => {
+      errorOutput += data.toString();
+    });
+
+    pythonProcess.on("close", (code) => {
+      if (code === 0) {
+        // Créer le fichier SRT
+        const srtFilePath = filePath.replace(".mp3", ".srt");
+        fs.writeFileSync(srtFilePath, srtContent);
+
+        // Envoyer le contenu SRT au frontend
+        res.json({
+          success: true,
+          srt_content: srtContent,
+          message: "Fichier SRT généré avec succès",
+        });
+
+        // Nettoyer les fichiers temporaires
+        fs.unlink(filePath, (err) => {
+          if (err)
+            console.error("Erreur lors de la suppression du fichier MP3:", err);
+        });
+      } else {
+        console.error("Erreur Python:", errorOutput);
+        res.status(500).json({
+          error: "Erreur lors de la conversion en SRT",
+          details: errorOutput,
+        });
+      }
     });
   } catch (error) {
     console.error("Erreur lors du traitement du fichier:", error);
     res.status(500).json({ error: "Erreur lors du traitement du fichier" });
   }
-});
-
-// Nettoyage des fichiers temporaires
-app.use((req, res, next) => {
-  res.on("finish", () => {
-    if (req.file) {
-      fs.unlink(req.file.path, (err) => {
-        if (err)
-          console.error("Erreur lors de la suppression du fichier:", err);
-      });
-    }
-  });
-  next();
 });
 
 app.listen(PORT, () => {
